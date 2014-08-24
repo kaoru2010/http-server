@@ -11,6 +11,7 @@ using namespace ::network::http;
 %}
 
 %x path protocol
+%x header header_value
 
 %%
 
@@ -22,7 +23,7 @@ HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
 
 <path>{
     " "         ;
-    [^ ]+       { BEGIN(protocol); yyextra->set_path(yytext); }
+    [^ \n]+     { BEGIN(protocol); yyextra->set_path(yytext); }
     \n          { yyextra->set_error(); return HTTP_BAD_REQUEST; }
 }
 
@@ -30,15 +31,28 @@ HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
     " "         ;
     HTTP/1.0    { yyextra->set_protocol(HTTP_1_0); }
     HTTP/1.1    { yyextra->set_protocol(HTTP_1_1); }
+    \r\n|\n     BEGIN(header);
     .+          { yyextra->set_error(); return HTTP_BAD_REQUEST; }
-    \n          { yyextra->set_error(); return HTTP_BAD_REQUEST; }
+}
+
+<header>{
+    " "         ;
+    [^:\n]+     ;
+    :           BEGIN(header_value);
+    \n          ;
+}
+
+<header_value>{
+    " "         ;
+    \r\n|\n     BEGIN(header);
+    .+          ;
 }
 
 %%
 
 namespace network { namespace http {
 
-boost::system::error_code parse_status_line(const char *buf, std::size_t length, http_request_t& request) {
+boost::system::error_code parse_request_header(const char *buf, std::size_t length, http_request_t& request) {
     using boost::system::make_error_code;
 
     yyscan_t scanner;

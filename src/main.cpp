@@ -38,14 +38,11 @@ private:
             buffer_.reset(new boost::asio::streambuf());
             http_request_.reset(new http_request_t());
 
-            // Read status line
-            yield boost::asio::async_read_until(istream_, *buffer_, "\r\n", *this);
-            if (boost::system::error_code ret = parse_status_line(boost::asio::buffer_cast<const char *>(buffer_->data()), size, *http_request_)) {
-                return;
-            }
-
             // Read header
             yield boost::asio::async_read_until(istream_, *buffer_, "\r\n\r\n", *this);
+            if (boost::system::error_code ret = parse_request_header(boost::asio::buffer_cast<const char *>(buffer_->data()), size, *http_request_)) {
+                return;
+            }
         }
     }
 };
