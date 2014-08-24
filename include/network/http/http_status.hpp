@@ -8,6 +8,8 @@ enum http_status_error
 {
     NO_ERROR         = 0,
     HTTP_BAD_REQUEST = 400,
+    HTTP_METHOD_NOT_ALLOWED = 405,
+    HTTP_INTERNAL_SERVER_ERROR = 500,
 };
 
 }} // namespace network { namespace http {
@@ -27,6 +29,8 @@ public:
         switch (ev) {
             default:
             case HTTP_BAD_REQUEST: return "Bad Request";
+            case HTTP_METHOD_NOT_ALLOWED: return "Method Not Allowed";
+            case HTTP_INTERNAL_SERVER_ERROR: return "Internal Server Error";
         }
     }
 };

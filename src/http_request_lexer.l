@@ -17,7 +17,7 @@ using namespace ::network::http;
 GET     { BEGIN(path); yyextra->set_method(GET); }
 POST    { BEGIN(path); yyextra->set_method(POST); }
 HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
-.+      { yyextra->set_error(); return HTTP_BAD_REQUEST; }
+.+      { yyextra->set_error(); return HTTP_METHOD_NOT_ALLOWED; }
 \n      { yyextra->set_error(); return HTTP_BAD_REQUEST; }
 
 <path>{
