@@ -1,0 +1,16 @@
+import testing ;
+import os ;
+import flex ;
+
+use-project /boost : [ os.environ BOOST_ROOT ] ;
+
+exe httpd
+    :
+    src/main.cpp
+    /boost//system
+    :
+    <include>include
+    <threading>multi
+    <toolset>gcc:<cxxflags>-std=gnu++0x
+    <toolset>clang:<cxxflags>-std=c++11
+    ;
