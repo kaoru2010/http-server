@@ -1,3 +1,5 @@
+#include <signal.h>
+
 #include <boost/asio.hpp>
 #include <boost/asio/coroutine.hpp>
 #include <network/http/server.hpp>
@@ -68,7 +70,21 @@ int main()
     boost::asio::io_service io_service;
     network::http::server<connection_context_creator> server{io_service, creator};
 
-    server.listen();
+    boost::asio::signal_set signals(io_service);
+    signals.add(SIGINT);
+    signals.add(SIGTERM);
+
+#if defined(SIGQUIT)
+    signals.add(SIGQUIT);
+#endif // defined(SIGQUIT)
+
+    signals.async_wait([&](const boost::system::error_code& error, int signal_number) {
+        io_service.stop();
+    });
+
+    server.listen("127.0.0.1", "10080");
+
+    io_service.run();
 
     return 0;
 }
