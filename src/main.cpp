@@ -13,14 +13,16 @@ class connection_context : boost::asio::coroutine
 {
     AsyncReadStream& istream_;
     Handler handler_;
-    boost::shared_ptr<boost::asio::streambuf> buffer_;
+    boost::shared_ptr<boost::asio::streambuf> request_buffer_;
+    boost::shared_ptr<boost::asio::streambuf> response_buffer_;
     boost::shared_ptr<http_request_t> http_request_;
 
 public:
     connection_context(AsyncReadStream& istream, Handler&& handler)
     :   istream_(istream)
     ,   handler_(handler)
-    ,   buffer_()
+    ,   request_buffer_()
+    ,   response_buffer_()
     ,   http_request_()
     {}
 
@@ -37,12 +39,26 @@ private:
             if (ec)
                 return;
 
-            buffer_.reset(new boost::asio::streambuf());
+            request_buffer_.reset(new boost::asio::streambuf());
             http_request_.reset(new http_request_t());
 
             // Read header
-            yield boost::asio::async_read_until(istream_, *buffer_, "\r\n\r\n", *this);
-            if (boost::system::error_code ret = parse_request_header(boost::asio::buffer_cast<const char *>(buffer_->data()), size, *http_request_)) {
+            yield boost::asio::async_read_until(istream_, *request_buffer_, "\r\n\r\n", *this);
+            ec = parse_request_header(boost::asio::buffer_cast<const char *>(request_buffer_->data()), size, *http_request_);
+            if (ec) {
+                response_buffer_.reset(new boost::asio::streambuf());
+                {
+                    std::ostream response_stream(response_buffer_.get());
+                    response_stream << "HTTP/1.0 " << ec.value() << " " << ec.message() << "\r\n";
+                    response_stream << "Content-Type: text/html\r\n";
+                    response_stream << "\r\n";
+                    response_stream << "<html>\n";
+                    response_stream << "<head><title>" << ec.value() << " " << ec.message() << "</title></head>\n";
+                    response_stream << "<body><h1>" << ec.value() << " " << ec.message() << "</h1></body>\n";
+                    response_stream << "</html>\n";
+                }
+
+                yield boost::asio::async_write(istream_, *response_buffer_, *this);
                 return;
             }
         }

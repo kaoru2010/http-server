@@ -64,6 +64,8 @@ boost::system::error_code parse_request_header(const char *buf, std::size_t leng
     yy_delete_buffer(buffer_state, scanner);
     yylex_destroy(scanner);
 
+    if (ret == 0) ret = HTTP_OK;
+
     return make_error_code(static_cast<http_status_error>(ret));
 }
 
