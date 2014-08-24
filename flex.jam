@@ -3,7 +3,7 @@ import generators ;
 
 type.register L : l ;
 
-generators.register-standard flex.flex : L : C ;
+generators.register-standard flex.flex : L : CPP ;
 
 actions flex
 {
