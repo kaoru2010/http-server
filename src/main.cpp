@@ -1,5 +1,6 @@
 #include <signal.h>
 
+#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/asio/coroutine.hpp>
 #include <network/http/server.hpp>
@@ -8,18 +9,18 @@
 namespace network { namespace http {
 
 #include <boost/asio/yield.hpp>
-template <typename AsyncReadStream, typename Handler>
+template <typename AsyncStream, typename Handler>
 class connection_context : boost::asio::coroutine
 {
-    AsyncReadStream& istream_;
+    AsyncStream& stream_;
     Handler handler_;
     boost::shared_ptr<boost::asio::streambuf> request_buffer_;
     boost::shared_ptr<boost::asio::streambuf> response_buffer_;
     boost::shared_ptr<http_request_t> http_request_;
 
 public:
-    connection_context(AsyncReadStream& istream, Handler&& handler)
-    :   istream_(istream)
+    connection_context(AsyncStream& stream, Handler&& handler)
+    :   stream_(stream)
     ,   handler_(handler)
     ,   request_buffer_()
     ,   response_buffer_()
@@ -29,22 +30,25 @@ public:
     void operator()(boost::system::error_code ec = {}, std::size_t size = 0) {
         run(ec, size);
 
-        if (is_complete())
+        if (is_complete()) {
             handler_();
+        }
     }
 
 private:
     void run(boost::system::error_code ec, std::size_t size) {  // bytes_transferred
         reenter(this) {
-            if (ec)
-                return;
 
             request_buffer_.reset(new boost::asio::streambuf());
             http_request_.reset(new http_request_t());
 
             // Read header
-            yield boost::asio::async_read_until(istream_, *request_buffer_, "\r\n\r\n", *this);
-            ec = parse_request_header(boost::asio::buffer_cast<const char *>(request_buffer_->data()), size, *http_request_);
+            yield boost::asio::async_read_until(stream_, *request_buffer_, "\r\n\r\n", *this);
+            if (ec) {
+                return;
+            }
+
+            parse_request_header(boost::asio::buffer_cast<const char *>(request_buffer_->data()), size, *http_request_, ec);
             if (ec) {
                 response_buffer_.reset(new boost::asio::streambuf());
                 {
@@ -58,7 +62,7 @@ private:
                     response_stream << "</html>\n";
                 }
 
-                yield boost::asio::async_write(istream_, *response_buffer_, *this);
+                yield boost::asio::async_write(stream_, *response_buffer_, *this);
                 return;
             }
         }
@@ -69,9 +73,9 @@ private:
 class connection_context_creator
 {
 public:
-    template <typename AsyncReadStream, typename Handler>
-    auto create(AsyncReadStream& istream, Handler&& handler) -> connection_context<AsyncReadStream, Handler> {
-        return {istream, handler};
+    template <typename AsyncStream, typename Handler>
+    auto create(AsyncStream& stream, Handler&& handler) -> connection_context<AsyncStream, Handler> {
+        return {stream, handler};
     }
 };
 
@@ -98,7 +102,10 @@ int main()
         io_service.stop();
     });
 
-    server.listen("127.0.0.1", "10080");
+    boost::system::error_code ec = server.listen("127.0.0.1", "10081");
+
+    if (ec)
+        return 1;
 
     io_service.run();
 

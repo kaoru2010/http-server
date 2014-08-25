@@ -52,7 +52,7 @@ HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
 
 namespace network { namespace http {
 
-boost::system::error_code parse_request_header(const char *buf, std::size_t length, http_request_t& request) {
+void parse_request_header(const char *buf, std::size_t length, http_request_t& request, boost::system::error_code& ec) {
     using boost::system::make_error_code;
 
     yyscan_t scanner;
@@ -66,7 +66,7 @@ boost::system::error_code parse_request_header(const char *buf, std::size_t leng
 
     if (ret == 0) ret = HTTP_OK;
 
-    return make_error_code(static_cast<http_status_error>(ret));
+    ec = make_error_code(static_cast<http_status_error>(ret));
 }
 
 }} // namespace network { namespace http {1
