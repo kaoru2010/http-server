@@ -1,57 +1,45 @@
 #pragma once
 
+#include <forward_list>
+#include <memory>
 #include <boost/asio.hpp>
-#include <network/http/context.hpp>
 
 namespace network { namespace http {
 
-template <typename ConnectionContextCreator>
-class server
+class connection_t;
+
+using connection_list_t = std::forward_list<std::unique_ptr<connection_t>>;
+
+class context_creator_t
+{
+public:
+    virtual ~context_creator_t() {}
+    virtual std::unique_ptr<connection_t> create(boost::asio::io_service& io_service) = 0;
+};
+
+class server_base
 {
     boost::asio::io_service& io_service_;
+    context_creator_t& context_creator_;
     boost::asio::ip::tcp::acceptor acceptor_;
-    ConnectionContextCreator& creator_;
+    connection_list_t connection_list_;
 
 public:
-    server(boost::asio::io_service& io_service, ConnectionContextCreator& creator)
-    :   io_service_(io_service)
-    ,   acceptor_(io_service)
-    ,   creator_(creator)
+    server_base(boost::asio::io_service& io_service, context_creator_t& context_creator);
+    boost::system::error_code listen(const std::string& address, const std::string& port);
+    boost::system::error_code stop(boost::system::error_code &ec);
+
+protected:
+    ~server_base();
+};
+
+template <typename ProtocolHandler>
+class server : public server_base
+{
+public:
+    explicit server(boost::asio::io_service& io_service) // , context_creator_t& context_creator
+    :   server_base(io_service, ProtocolHandler::get_context_creator())
     {}
-
-    boost::system::error_code listen(const std::string& address, const std::string& port) {
-        using tcp = boost::asio::ip::tcp;
-
-        boost::system::error_code ec;
-
-        tcp::resolver resolver(io_service_);
-        tcp::resolver::query query(address, port);
-        tcp::endpoint endpoint = *resolver.resolve(query);
-
-        acceptor_.open(endpoint.protocol(), ec);
-        if (ec)
-            return ec;
-
-        acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
-
-        acceptor_.bind(endpoint, ec);
-        if (ec)
-            return ec;
-
-        int listen_backlog = 3;// The maximum length of the queue of pending connections.
-        acceptor_.listen(listen_backlog, ec);
-        if (ec)
-            return ec;
-
-        socket_context<ConnectionContextCreator> context(acceptor_, creator_);
-        context();
-
-        return ec;
-    }
-
-    boost::system::error_code stop(boost::system::error_code &ec) {
-        return acceptor_.close(ec);
-    }
 };
 
 }} // namespace network { namespace http {

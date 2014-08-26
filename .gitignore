@@ -1,4 +1,6 @@
 bin/
+*.bak
+*.log
 
 # Compiled Object files
 *.slo

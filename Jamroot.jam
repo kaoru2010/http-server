@@ -4,14 +4,19 @@ import flex ;
 
 use-project /boost : [ os.environ BOOST_ROOT ] ;
 
+project http-server
+    :   requirements
+        <include>include
+        <threading>multi
+        <toolset>gcc:<cxxflags>-std=gnu++0x
+        <toolset>clang:<cxxflags>-std=c++11
+    ;
+
 exe httpd
     :
     src/main.cpp
+    src/server.cpp
+    src/http_protocol.cpp
     src/http_request_lexer.l
     /boost//system
-    :
-    <include>include
-    <threading>multi
-    <toolset>gcc:<cxxflags>-std=gnu++0x
-    <toolset>clang:<cxxflags>-std=c++11
     ;
