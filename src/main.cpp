@@ -1,10 +1,9 @@
 #include <signal.h>
 
 #include <iostream>
+
 #include <boost/asio.hpp>
-#include <boost/asio/coroutine.hpp>
 #include <network/http/server.hpp>
-#include <network/http/http_request.hpp>
 #include <network/http/http_protocol.hpp>
 
 using namespace network::http;
