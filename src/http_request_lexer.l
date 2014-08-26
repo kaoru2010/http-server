@@ -18,7 +18,7 @@ using namespace ::network::http;
 GET     { BEGIN(path); yyextra->set_method(GET); }
 POST    { BEGIN(path); yyextra->set_method(POST); }
 HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
-.+      { yyextra->set_error(); return HTTP_METHOD_NOT_ALLOWED; }
+.       { yyextra->set_error(); return HTTP_METHOD_NOT_ALLOWED; }
 \n      { yyextra->set_error(); return HTTP_BAD_REQUEST; }
 
 <path>{
@@ -29,10 +29,10 @@ HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
 
 <protocol>{
     " "         ;
-    HTTP/1.0    { yyextra->set_protocol(HTTP_1_0); }
-    HTTP/1.1    { yyextra->set_protocol(HTTP_1_1); }
+    "HTTP/1.0"  { yyextra->set_protocol(HTTP_1_0); }
+    "HTTP/1.1"  { yyextra->set_protocol(HTTP_1_1); }
     \r\n|\n     BEGIN(header);
-    .+          { yyextra->set_error(); return HTTP_BAD_REQUEST; }
+    .           { yyextra->set_error(); return HTTP_BAD_REQUEST; }
 }
 
 <header>{
@@ -52,7 +52,8 @@ HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
 
 namespace network { namespace http {
 
-void parse_request_header(const char *buf, std::size_t length, http_request_t& request, boost::system::error_code& ec) {
+boost::system::error_code parse_request_header(const char *buf, std::size_t length, http_request_t& request)
+{
     using boost::system::make_error_code;
 
     yyscan_t scanner;
@@ -66,7 +67,7 @@ void parse_request_header(const char *buf, std::size_t length, http_request_t& r
 
     if (ret == 0) ret = HTTP_OK;
 
-    ec = make_error_code(static_cast<http_status_error>(ret));
+    return make_error_code(static_cast<http_status_error>(ret));
 }
 
 }} // namespace network { namespace http {1

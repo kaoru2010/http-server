@@ -35,12 +35,12 @@ public:
         (*this)();
     }
 
-    void operator()(boost::system::error_code ec = {}, std::size_t size = 0);
+    void operator()(boost::system::error_code const& ec = {}, std::size_t size = 0);
 };
 
 #include <boost/asio/yield.hpp>
-void http_protocol_context_t::operator()(boost::system::error_code ec, std::size_t size) {  // bytes_transferred
-    using std::ref;
+void http_protocol_context_t::operator()(boost::system::error_code const& ec, std::size_t size) {  // bytes_transferred
+    using namespace std;
 
     if (ec)
         return;
@@ -49,7 +49,10 @@ void http_protocol_context_t::operator()(boost::system::error_code ec, std::size
         // Read header
         yield boost::asio::async_read_until(stream_, request_buffer_, "\r\n\r\n", ref(*this));
 
-        parse_request_header(boost::asio::buffer_cast<const char *>(request_buffer_.data()), size, http_request_, ec);
+        if (auto ret = parse_request_header(boost::asio::buffer_cast<const char *>(request_buffer_.data()), size, http_request_)) {
+            cerr << ret.message() << "(" << ret << ")" << endl;
+            return;
+        }
 
         {
             std::ostream response_stream(&response_buffer_);

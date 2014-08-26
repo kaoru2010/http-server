@@ -27,6 +27,6 @@ public:
     void set_error() {}
 };
 
-void parse_request_header(const char *buf, std::size_t length, http_request_t& request, boost::system::error_code& ec);
+boost::system::error_code parse_request_header(const char *buf, std::size_t length, http_request_t& request);
 
 }} // namespace network { namespace http {

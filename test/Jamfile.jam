@@ -1,0 +1,6 @@
+import testing ;
+
+run http_request_test.cpp
+    ../src/http_request_lexer.l
+    /boost//system
+    ;

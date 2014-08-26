@@ -7,5 +7,5 @@ generators.register-standard flex.flex : L : CPP ;
 
 actions flex
 {
-    flex -o $(<) $(>)
+    flex -p -o $(<) $(>)
 }
