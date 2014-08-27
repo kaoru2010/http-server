@@ -4,7 +4,7 @@
 
 #include <boost/system/error_code.hpp>
 
-namespace network { namespace http {
+namespace network { namespace protocols { namespace http {
 
 enum method_type_t {
     GET, POST, HEAD,
@@ -44,4 +44,4 @@ public:
 
 boost::system::error_code parse_request_header(const char *buf, std::size_t length, http_request_t& request);
 
-}} // namespace network { namespace http {
+}}} // namespace network { namespace protocols { namespace http {

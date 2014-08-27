@@ -4,10 +4,10 @@
 %option extra-type="http_request_t *"
 %{
 #include <boost/system/error_code.hpp>
-#include <network/http/http_request.hpp>
-#include <network/http/http_status.hpp>
+#include <network/protocols/http/http_request.hpp>
+#include <network/protocols/http/http_status.hpp>
 
-using namespace ::network::http;
+using namespace ::network::protocols::http;
 %}
 
 %x path protocol
@@ -50,7 +50,7 @@ HEAD    { BEGIN(path); yyextra->set_method(HEAD); }
 
 %%
 
-namespace network { namespace http {
+namespace network { namespace protocols { namespace http {
 
 boost::system::error_code parse_request_header(const char *buf, std::size_t length, http_request_t& request)
 {
@@ -68,4 +68,4 @@ boost::system::error_code parse_request_header(const char *buf, std::size_t leng
     return make_error_code(static_cast<http_status_error>(ret));
 }
 
-}} // namespace network { namespace http {1
+}}} // namespace network { namespace protocols { namespace http {

@@ -2,16 +2,16 @@
 #include <functional>
 #include <boost/asio.hpp>
 #include <boost/asio/coroutine.hpp>
-#include <network/http/connection.hpp>
-#include <network/http/http_protocol.hpp>
-#include <network/http/http_request.hpp>
+#include <network/servers/connection.hpp>
+#include <network/protocols/http/http_protocol.hpp>
+#include <network/protocols/http/http_request.hpp>
 
-namespace network { namespace http {
+namespace network { namespace protocols { namespace http {
 
 namespace {
 
 class http_protocol_context_t
-    :   public connection_t
+    :   public servers::connection_t
     ,   private boost::asio::coroutine
 {
     boost::asio::ip::tcp::socket stream_;
@@ -77,13 +77,13 @@ void http_protocol_context_t::operator()(boost::system::error_code const& ec, st
 } // annonymous namespace
 
 
-auto http_protocol_context_creator::create(boost::asio::io_service& io_service) -> std::unique_ptr<network::http::connection_t> {
-    return std::unique_ptr<network::http::connection_t>(new http_protocol_context_t(io_service));
+auto http_protocol_context_creator::create(boost::asio::io_service& io_service) -> std::unique_ptr<servers::connection_t> {
+    return std::unique_ptr<servers::connection_t>(new http_protocol_context_t(io_service));
 }
 
-auto http_protocol::get_context_creator() -> context_creator_t& {
+auto http_protocol::get_context_creator() -> servers::context_creator_t& {
     static http_protocol_context_creator creator;
     return creator;
 }
 
-}} // namespace network { namespace http {
+}}} // namespace network { namespace protocols { namespace http {

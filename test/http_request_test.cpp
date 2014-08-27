@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <string>
-#include <network/http/http_request.hpp>
+#include <network/protocols/http/http_request.hpp>
 
 using namespace std;
-using namespace network::http;
+using namespace network::protocols::http;
 
 BOOST_AUTO_TEST_SUITE(http_request_test)
 

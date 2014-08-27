@@ -2,13 +2,13 @@
 #include <memory>
 #include <functional>
 #include <boost/asio.hpp>
-#include <network/http/server.hpp>
-#include <network/http/connection.hpp>
+#include <network/servers/server.hpp>
+#include <network/servers/connection.hpp>
 #include <boost/asio/coroutine.hpp>
 
 using namespace std;
 
-namespace network { namespace http {
+namespace network { namespace servers {
 
 namespace {
 
@@ -101,4 +101,4 @@ boost::system::error_code server_base::stop(boost::system::error_code &ec)
     return acceptor_.close(ec);
 }
 
-}} // namespace network { namespace http {
+}} // namespace network { namespace servers {

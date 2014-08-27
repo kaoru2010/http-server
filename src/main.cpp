@@ -3,15 +3,16 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
-#include <network/http/server.hpp>
-#include <network/http/http_protocol.hpp>
+#include <network/servers/server.hpp>
+#include <network/protocols/http/http_protocol.hpp>
 
-using namespace network::http;
+using namespace network::protocols::http;
+using namespace network::servers;
 
 int main()
 {
     boost::asio::io_service io_service;
-    network::http::server<http_protocol> server(io_service);
+    server<http_protocol> server(io_service);
 
     boost::asio::signal_set signals(io_service);
     signals.add(SIGINT);

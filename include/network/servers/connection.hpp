@@ -3,7 +3,7 @@
 #include <memory>
 #include <boost/asio.hpp>
 
-namespace network { namespace http {
+namespace network { namespace servers {
 
 class connection_t
 {
@@ -18,4 +18,4 @@ connection_t::~connection_t()
 {
 }
 
-}} // namespace network { namespace http {
+}} // namespace network { namespace servers {

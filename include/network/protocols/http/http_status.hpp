@@ -2,7 +2,7 @@
 
 #include <boost/system/error_code.hpp>
 
-namespace network { namespace http {
+namespace network { namespace protocols { namespace http {
 
 enum http_status_error
 {
@@ -34,7 +34,7 @@ enum http_status_error
     HTTP_VERSION_NOT_SUPPORTED = 505,
 };
 
-}} // namespace network { namespace http {
+}}} // namespace network { namespace protocols { namespace http {
 
 namespace boost { namespace system {
 
@@ -46,7 +46,7 @@ public:
     }
 
     virtual std::string message(int ev) const {
-        using namespace network::http;
+        using namespace network::protocols::http;
 
         switch (ev) {
             case HTTP_CONTINUE: return "Continue";
@@ -87,16 +87,16 @@ http_status_error_category& get_http_status_error_category() {
 }
 
 template<>
-struct is_error_condition_enum<network::http::http_status_error>
+struct is_error_condition_enum<network::protocols::http::http_status_error>
 {
     static const bool value = true;
 };
 
-error_condition make_error_condition(network::http::http_status_error error) noexcept {
+error_condition make_error_condition(network::protocols::http::http_status_error error) noexcept {
     return error_condition(error, get_http_status_error_category());
 }
 
-error_code make_error_code(network::http::http_status_error ev) {
+error_code make_error_code(network::protocols::http::http_status_error ev) {
     return error_code(ev, get_http_status_error_category());
 }
 
