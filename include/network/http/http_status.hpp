@@ -52,7 +52,9 @@ public:
             case HTTP_CONTINUE: return "Continue";
             case HTTP_SWITCHING_PROTOCOLS: return "Switching Protocols";
 
+            case NO_ERROR:
             case HTTP_OK: return "OK";
+
             case HTTP_CREATED: return "Created";
             case HTTP_ACCEPTED: return "Accepted";
             case HTTP_PARTIAL_CONTENT: return "Partial Content";

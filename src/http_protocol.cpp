@@ -55,8 +55,9 @@ void http_protocol_context_t::operator()(boost::system::error_code const& ec, st
         }
 
         {
+            int status_code = ec ? ec.value() : 200;
             std::ostream response_stream(&response_buffer_);
-            response_stream << "HTTP/1.0 " << ec.value() << " " << ec.message() << "\r\n";
+            response_stream << "HTTP/1.0 " << status_code << " " << ec.message() << "\r\n";
             response_stream << "Content-Type: text/html\r\n";
             response_stream << "\r\n";
             response_stream << "<html>\n";
