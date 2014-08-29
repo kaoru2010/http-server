@@ -1,7 +1,13 @@
 import testing ;
 
 run http_request_test.cpp
-    ../src/http_request_lexer.l
+    ../src/http_request_lexer.ll
     /boost//system
     /boost/test//boost_unit_test_framework
+    :
+    :
+    :
+    <cflags>-fprofile-arcs
+    <cflags>-ftest-coverage
+    <linkflags>-fprofile-arcs
     ;

@@ -2,8 +2,10 @@ import type ;
 import generators ;
 
 type.register L : l ;
+type.register LL : ll ;
 
-generators.register-standard flex.flex : L : CPP ;
+generators.register-standard flex.flex : L : C ;
+generators.register-standard flex.flex : LL : CPP ;
 
 actions flex
 {

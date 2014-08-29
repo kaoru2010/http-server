@@ -92,10 +92,12 @@ struct is_error_condition_enum<network::protocols::http::http_status_error>
     static const bool value = true;
 };
 
+inline
 error_condition make_error_condition(network::protocols::http::http_status_error error) noexcept {
     return error_condition(error, get_http_status_error_category());
 }
 
+inline
 error_code make_error_code(network::protocols::http::http_status_error ev) {
     return error_code(ev, get_http_status_error_category());
 }
