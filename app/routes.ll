@@ -8,6 +8,7 @@
 #include <network/protocols/http/http_request.hpp>
 #include <network/protocols/http/http_status.hpp>
 #include <controllers/demo_controller.hpp>
+#include <demo_router.hpp>
 
 using namespace ::network::protocols::http;
 
@@ -31,9 +32,7 @@ using namespace ::network::protocols::http;
 
 %%
 
-namespace network { namespace protocols { namespace http {
-
-boost::system::error_code dispatch_controller(std::string const& url, http_request_t& request)
+auto demo_router::dispatch_controller(const std::string& url, network::protocols::http::http_request_t& request) -> boost::system::error_code
 {
     using boost::system::make_error_code;
 
@@ -48,5 +47,3 @@ boost::system::error_code dispatch_controller(std::string const& url, http_reque
 
     return make_error_code(static_cast<http_status_error>(ret));
 }
-
-}}} // namespace network { namespace protocols { namespace http {

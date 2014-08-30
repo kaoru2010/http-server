@@ -1,3 +1,4 @@
+#include <memory>
 #include <iostream>
 #include <functional>
 #include <boost/asio.hpp>
@@ -77,13 +78,13 @@ void http_protocol_context_t::operator()(boost::system::error_code const& ec, st
 } // annonymous namespace
 
 
-auto http_protocol_context_creator::create(boost::asio::io_service& io_service) -> std::unique_ptr<servers::connection_t> {
+auto http_protocol::create_connection_context(boost::asio::io_service& io_service) -> std::unique_ptr<servers::connection_t> {
     return std::unique_ptr<servers::connection_t>(new http_protocol_context_t(io_service));
 }
 
-auto http_protocol::get_context_creator() -> servers::context_creator_t& {
-    static http_protocol_context_creator creator;
-    return creator;
+void http_protocol::add_router(std::unique_ptr<network::protocols::http::router>&& router_ptr) {
+    using std::move;
+    routers_.push_back(move(router_ptr));
 }
 
 }}} // namespace network { namespace protocols { namespace http {

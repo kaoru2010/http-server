@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <network/servers/server.hpp>
 #include <network/protocols/http/http_protocol.hpp>
+#include <demo_router.hpp>
 
 using namespace network::protocols::http;
 using namespace network::servers;
@@ -13,6 +14,7 @@ int main()
 {
     boost::asio::io_service io_service;
     server<http_protocol> server(io_service);
+    server.add_router<demo_router>();
 
     boost::asio::signal_set signals(io_service);
     signals.add(SIGINT);

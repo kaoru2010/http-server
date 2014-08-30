@@ -10,24 +10,15 @@ using namespace std;
 
 namespace network { namespace servers {
 
-namespace {
-
 #include <boost/asio/yield.hpp>
-class server_context_t : boost::asio::coroutine
+class server_base::server_context_t : boost::asio::coroutine
 {
     using self_t = server_context_t;
-
-    boost::asio::io_service &io_service_;
-    boost::asio::ip::tcp::acceptor& acceptor_;
-    context_creator_t& context_creator_;
-    connection_list_t& connection_list_;
+    server_base& server_;
 
 public:
-    server_context_t(boost::asio::io_service &io_service, boost::asio::ip::tcp::acceptor& acceptor, context_creator_t& context_creator, connection_list_t& connection_list)
-    :   io_service_(io_service)
-    ,   acceptor_(acceptor)
-    ,   context_creator_(context_creator)
-    ,   connection_list_(connection_list)
+    server_context_t(server_base& server)
+    :   server_(server)
     {}
 
     void operator()(boost::system::error_code const& ec = {})
@@ -38,25 +29,21 @@ public:
         reenter(this) {
             do {
                 yield {
-                    unique_ptr<connection_t> ptr(context_creator_.create(io_service_));
-                    acceptor_.async_accept(ptr->socket(), *this);
-                    connection_list_.push_front(move(ptr));
+                    unique_ptr<connection_t> ptr(server_.create_connection_context(server_.io_service_));
+                    server_.acceptor_.async_accept(ptr->socket(), *this);
+                    server_.connection_list_.push_front(move(ptr));
                 }
                 fork self_t(*this)();
             } while (is_parent());
 
-            connection_list_.front()->handle_connection();
+            server_.connection_list_.front()->handle_connection();
         }
     }
 };
 #include <boost/asio/unyield.hpp>
 
-} // anonymous namespace
-
-
-server_base::server_base(boost::asio::io_service& io_service, context_creator_t& context_creator)
+server_base::server_base(boost::asio::io_service& io_service)
 :   io_service_(io_service)
-,   context_creator_(context_creator)
 ,   acceptor_(io_service)
 ,   connection_list_()
 {}
@@ -90,7 +77,7 @@ boost::system::error_code server_base::listen(const std::string& address, const 
     if (ec)
         return ec;
 
-    server_context_t context(io_service_, acceptor_, context_creator_, connection_list_);
+    server_context_t context(*this);
     context();
 
     return ec;
