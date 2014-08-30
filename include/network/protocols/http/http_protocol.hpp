@@ -18,6 +18,10 @@ public:
         add_router(std::move(ptr));
     }
 
+private:
+    class http_protocol_context_t;
+
+protected:
     auto create_connection_context(boost::asio::io_service& io_service) -> std::unique_ptr<servers::connection_t>;
 };
 

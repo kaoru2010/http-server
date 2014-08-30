@@ -9,9 +9,7 @@
 
 namespace network { namespace protocols { namespace http {
 
-namespace {
-
-class http_protocol_context_t
+class http_protocol::http_protocol_context_t
     :   public servers::connection_t
     ,   private boost::asio::coroutine
 {
@@ -19,10 +17,12 @@ class http_protocol_context_t
     boost::asio::streambuf request_buffer_;
     boost::asio::streambuf response_buffer_;
     http_request_t http_request_;
+    http_protocol& parent_;
 
 public:
-    http_protocol_context_t(boost::asio::io_service& io_service)
+    http_protocol_context_t(boost::asio::io_service& io_service, http_protocol& parent)
     :   stream_(io_service)
+    ,   parent_(parent)
     {}
 
     virtual ~http_protocol_context_t() {
@@ -40,7 +40,7 @@ public:
 };
 
 #include <boost/asio/yield.hpp>
-void http_protocol_context_t::operator()(boost::system::error_code const& ec, std::size_t size) {  // bytes_transferred
+void http_protocol::http_protocol_context_t::operator()(boost::system::error_code const& ec, std::size_t size) {  // bytes_transferred
     using namespace std;
 
     if (ec)
@@ -53,6 +53,13 @@ void http_protocol_context_t::operator()(boost::system::error_code const& ec, st
         if (auto ret = parse_request_header(boost::asio::buffer_cast<const char *>(request_buffer_.data()), size, http_request_)) {
             cerr << ret.message() << "(" << ret << ")" << endl;
             return;
+        }
+
+        for (auto&& ptr : parent_.routers_) {
+            if (auto ret = ptr->dispatch_controller(http_request_.get_path(), http_request_)) {
+                cerr << ret.message() << "(" << ret << ")" << endl;
+                break;
+            }
         }
 
         {
@@ -75,11 +82,8 @@ void http_protocol_context_t::operator()(boost::system::error_code const& ec, st
 }
 #include <boost/asio/unyield.hpp>
 
-} // annonymous namespace
-
-
 auto http_protocol::create_connection_context(boost::asio::io_service& io_service) -> std::unique_ptr<servers::connection_t> {
-    return std::unique_ptr<servers::connection_t>(new http_protocol_context_t(io_service));
+    return std::unique_ptr<servers::connection_t>(new http_protocol_context_t(io_service, *this));
 }
 
 void http_protocol::add_router(std::unique_ptr<network::protocols::http::router>&& router_ptr) {
