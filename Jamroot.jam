@@ -7,6 +7,7 @@ use-project /boost : [ os.environ BOOST_ROOT ] ;
 project http-server
     :   requirements
         <include>include
+        <include>app
         <include>vendor/rapidjson/include
         <threading>multi
         <toolset>gcc:<cxxflags>-std=gnu++0x
@@ -20,5 +21,6 @@ exe httpd
     src/http_protocol.cpp
     src/http_request_lexer.ll
     app/routes.ll
+    app/controllers/demo_controller.cpp
     /boost//system
     ;

@@ -7,10 +7,8 @@ namespace controllers {
 class demo_controller
 {
 public:
-    boost::system::error_code get_index() const
-    {
-        return HTTP_OK;
-    }
+    network::protocols::http::http_status_error get_index() const;
+    network::protocols::http::http_status_error get_list() const;
 };
 
 } // namespace app { namespace controllers {

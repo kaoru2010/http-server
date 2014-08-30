@@ -7,22 +7,33 @@
 #include <boost/system/error_code.hpp>
 #include <network/protocols/http/http_request.hpp>
 #include <network/protocols/http/http_status.hpp>
+#include <controllers/demo_controller.hpp>
 
 using namespace ::network::protocols::http;
 
-http_status_error invoke_controller() { return HTTP_NOT_FOUND; }
+//network::protocols::http::http_status_error invoke_controller() {
+//    controllers::demo_controller ctx;
+//    return ctx.get_index();
+//}
 %}
 
 %%
 
-"/index" return invoke_controller();
+"/index" {
+    controllers::demo_controller ctx;
+    return ctx.get_index();
+}
+"/list" {
+    controllers::demo_controller ctx;
+    return ctx.get_list();
+}
 .|\n return HTTP_NOT_FOUND;
 
 %%
 
 namespace network { namespace protocols { namespace http {
 
-boost::system::error_code parse_request_header(std::string const& url, http_request_t& request)
+boost::system::error_code dispatch_controller(std::string const& url, http_request_t& request)
 {
     using boost::system::make_error_code;
 
@@ -39,4 +50,3 @@ boost::system::error_code parse_request_header(std::string const& url, http_requ
 }
 
 }}} // namespace network { namespace protocols { namespace http {
-

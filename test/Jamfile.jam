@@ -11,3 +11,17 @@ run http_request_test.cpp
     <cflags>-ftest-coverage
     <linkflags>-fprofile-arcs
     ;
+
+run routes_test.cpp
+    ../src/http_request_lexer.ll
+    ../app/routes.ll
+    ../app/controllers/demo_controller.cpp
+    /boost//system
+    /boost/test//boost_unit_test_framework
+    :
+    :
+    :
+    <cflags>-fprofile-arcs
+    <cflags>-ftest-coverage
+    <linkflags>-fprofile-arcs
+    ;
